@@ -6,7 +6,7 @@
     <title>Apnea Trail Pro</title>
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="theme-color" content="#064e3b">
+    <meta name="theme-color" content="#7f1d1d">
     
     <link rel="manifest" href="manifest.json">
     <link rel="icon" type="image/png" href="https://flaticon.com">
@@ -14,14 +14,14 @@
 
     <style>
         :root {
-            --bg-color: #022c22;
-            --card-bg: #064e3b;
-            --accent: #4ade80;
-            --text: #f0fdf4;
-            --text-muted: #a7f3d0;
+            --bg-color: #450a0a;
+            --card-bg: #7f1d1d;
+            --accent: #f87171;
+            --text: #fef2f2;
+            --text-muted: #fca5a5;
             --success: #22c55e;
             --warning: #f59e0b;
-            --danger: #ef4444;
+            --danger: #f87171;
         }
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
@@ -34,31 +34,31 @@
             -webkit-tap-highlight-color: transparent;
         }
         .container { width: 100%; max-width: 500px; display: flex; flex-direction: column; gap: 16px; }
-        .header { text-align: center; padding: 12px; background: var(--card-bg); border-radius: 12px; border: 1px solid #0f766e; }
-        .card { background: var(--card-bg); border-radius: 12px; padding: 16px; border: 1px solid #0f766e; }
+        .header { text-align: center; padding: 12px; background: var(--card-bg); border-radius: 12px; border: 1px solid #b91c1c; }
+        .card { background: var(--card-bg); border-radius: 12px; padding: 16px; border: 1px solid #b91c1c; }
         .tabs { display: flex; gap: 8px; margin-bottom: 12px; }
-        .tab-btn { flex: 1; padding: 12px 10px; background: #047857; border: none; color: var(--text); border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 0.9rem; }
-        .tab-btn.active { background: var(--accent); color: #022c22; }
+        .tab-btn { flex: 1; padding: 12px 10px; background: #991b1b; border: none; color: var(--text); border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 0.9rem; }
+        .tab-btn.active { background: var(--accent); color: #450a0a; }
         .protocol-info { font-size: 0.85em; color: var(--text-muted); margin-bottom: 12px; line-height: 1.4; min-height: 45px; }
         .display-box { display: flex; flex-direction: column; align-items: center; justify-content: center; margin: 20px 0; min-height: 140px; }
         .timer-display { font-size: 4rem; font-weight: bold; color: var(--accent); font-variant-numeric: tabular-nums; line-height: 1; }
         .status-display { text-align: center; font-size: 1.6rem; font-weight: bold; color: var(--warning); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 1px; }
         .sub-status { font-size: 0.95rem; color: var(--text-muted); font-weight: 500; }
         .controls { display: flex; gap: 8px; }
-        button.action-btn { flex: 1; padding: 16px; border: none; border-radius: 8px; font-size: 1.1rem; font-weight: bold; cursor: pointer; background: var(--accent); color: #022c22; }
-        button.secondary { background: #115e59; color: var(--text); }
+        button.action-btn { flex: 1; padding: 16px; border: none; border-radius: 8px; font-size: 1.1rem; font-weight: bold; cursor: pointer; background: var(--accent); color: #450a0a; }
+        button.secondary { background: #991b1b; color: var(--text); }
         .history-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
-        .clear-btn { background: transparent; border: none; color: #f87171; cursor: pointer; font-size: 0.85rem; }
+        .clear-btn { background: transparent; border: none; color: #fca5a5; cursor: pointer; font-size: 0.85rem; }
         .history-list { list-style: none; padding: 0; margin: 0; max-height: 150px; overflow-y: auto; }
-        .history-item { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #0f766e; font-size: 0.9em; }
-        .rule-box { background: #4ade8011; border-left: 4px solid var(--accent); padding: 10px; font-size: 0.85em; border-radius: 0 8px 8px 0; margin-top: 12px; }
+        .history-item { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #b91c1c; font-size: 0.9em; }
+        .rule-box { background: #f8717111; border-left: 4px solid var(--accent); padding: 10px; font-size: 0.85em; border-radius: 0 8px 8px 0; margin-top: 12px; }
     </style>
 </head>
 <body>
-    <div class="container" onclick="unlockAudioOnce()">
+    <div class="container">
         <div class="header">
             <h2>🏃‍♂️ Entrenador de Apnea</h2>
-            <span style="font-size: 0.8em; color: var(--text-muted)">Audio Guía por Voz Activa</span>
+            <span style="font-size: 0.8em; color: var(--text-muted)">Alertas de Sonido Fijas</span>
         </div>
 
         <div class="card">
@@ -73,7 +73,7 @@
             <div class="display-box">
                 <div id="status" class="status-display">Listo</div>
                 <div id="timer" class="timer-display">00:00</div>
-                <div id="sub-status" class="sub-status">Toca cualquier parte de la pantalla para activar el audio</div>
+                <div id="sub-status" class="sub-status">Presiona Iniciar Rutina</div>
             </div>
 
             <div class="controls">
@@ -88,9 +88,6 @@
                 <button class="clear-btn" onclick="clearHistory()">Borrar</button>
             </div>
             <ul id="history" class="history-list"></ul>
-            <div class="rule-box">
-                <strong>🔊 Consejo Clave:</strong> Quita el modo silencio de tu móvil para escuchar la voz del asistente correctamente mientras entrenas.
-            </div>
         </div>
     </div>
 
@@ -98,7 +95,7 @@
         let currentProtocol = 'estatico';
         let mainInterval = null;
         let isRunning = false;
-        let audioUnlocked = false;
+        let audioCtx = null;
         
         let timeRemaining = 0;
         let currentPhaseIndex = 0;
@@ -108,29 +105,29 @@
             estatico: {
                 desc: "Tabla CO2 Estática: Bloques controlados para acostumbrar al sistema nervioso al exceso de dióxido de carbono.",
                 timeline: [
-                    { name: "Inhala profundamente", duration: 5, voice: "Inhala profundamente", color: "var(--accent)" },
-                    { name: "Exhala relajado", duration: 5, voice: "Exhala y vacía parcialmente", color: "var(--warning)" },
-                    { name: "Apnea", duration: 30, voice: "Inicia apnea. Mantén la calma.", color: "var(--danger)" },
-                    { name: "Inhala aire", duration: 4, voice: "Apnea terminada. Inhala.", color: "var(--accent)" },
-                    { name: "Recuperación", duration: 15, voice: "Respira normal.", color: "var(--text-muted)" }
+                    { name: "Inhala profundamente", duration: 5, tone: 440, color: "var(--accent)" },
+                    { name: "Exhala relajado", duration: 5, tone: 550, color: "var(--warning)" },
+                    { name: "Apnea", duration: 30, tone: 880, color: "var(--danger)" },
+                    { name: "Inhala aire", duration: 4, tone: 440, color: "var(--accent)" },
+                    { name: "Recuperación", duration: 15, tone: 330, color: "var(--text-muted)" }
                 ]
             },
             caminata: {
                 desc: "Simulador de Marcha en Pendiente: Apneas dinámicas calculadas para pasos en subidas exigentes de montaña.",
                 timeline: [
-                    { name: "Inhala en marcha", duration: 6, voice: "Inhala aire", color: "var(--accent)" },
-                    { name: "Exhala en marcha", duration: 4, voice: "Exhala todo el aire", color: "var(--warning)" },
-                    { name: "Apnea en movimiento", duration: 20, voice: "Inicia apnea. Empieza a caminar.", color: "var(--danger)" },
-                    { name: "Recuperación", duration: 20, voice: "Apnea terminada. Recupera el aliento.", color: "var(--text-muted)" }
+                    { name: "Inhala en marcha", duration: 6, tone: 440, color: "var(--accent)" },
+                    { name: "Exhala en marcha", duration: 4, tone: 550, color: "var(--warning)" },
+                    { name: "Apnea en movimiento", duration: 20, tone: 880, color: "var(--danger)" },
+                    { name: "Recuperación", duration: 20, tone: 330, color: "var(--text-muted)" }
                 ]
             },
             trote: {
                 desc: "Trote Hipóxico: Bloques cortos y continuos simulando la alta presión pulmonar de ritmos de carrera.",
                 timeline: [
-                    { name: "Inhala trotando", duration: 4, voice: "Inhala", color: "var(--accent)" },
-                    { name: "Exhala trotando", duration: 4, voice: "Exhala el aire", color: "var(--warning)" },
-                    { name: "Apnea en carrera", duration: 15, voice: "Apnea en trote. Mantén el ritmo.", color: "var(--danger)" },
-                    { name: "Recuperación activa", duration: 25, voice: "Respira y recupera en carrera.", color: "var(--text-muted)" }
+                    { name: "Inhala trotando", duration: 4, tone: 440, color: "var(--accent)" },
+                    { name: "Exhala trotando", duration: 4, tone: 550, color: "var(--warning)" },
+                    { name: "Apnea en carrera", duration: 15, tone: 880, color: "var(--danger)" },
+                    { name: "Recuperación activa", duration: 25, tone: 330, color: "var(--text-muted)" }
                 ]
             }
         };
@@ -140,26 +137,30 @@
             changeProtocol('estatico');
         });
 
-        // Mecanismo forzado para móviles: desbloquea el sintetizador de voz al primer toque
-        function unlockAudioOnce() {
-            if (audioUnlocked) return;
-            if ('speechSynthesis' in window) {
-                window.speechSynthesis.cancel();
-                // Emitir una locución vacía e invisible para engañar al sistema de seguridad del móvil
-                const u = new SpeechSynthesisUtterance("");
-                window.speechSynthesis.speak(u);
-                audioUnlocked = true;
-                document.getElementById('sub-status').innerText = "Presiona iniciar para oír las instrucciones";
-            }
-        }
-
-        function speak(text) {
-            if ('speechSynthesis' in window) {
-                window.speechSynthesis.cancel();
-                const utterance = new SpeechSynthesisUtterance(text);
-                utterance.lang = 'es-ES';
-                utterance.rate = 1.05;
-                window.speechSynthesis.speak(utterance);
+        function playSound(frequency, duration) {
+            try {
+                if (!audioCtx) {
+                    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                }
+                if (audioCtx.state === 'suspended') {
+                    audioCtx.resume();
+                }
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(frequency, audioCtx.currentTime);
+                
+                gain.gain.setValueAtTime(0.15, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.00001, audioCtx.currentTime + duration);
+                
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                
+                osc.start();
+                osc.stop(audioCtx.currentTime + duration);
+            } catch (e) {
+                console.error(e);
             }
         }
 
@@ -175,13 +176,30 @@
         }
 
         function toggleRoutine() {
-            // Asegurar desbloqueo si el usuario fue directo al botón
-            unlockAudioOnce();
             if (isRunning) return;
             
-            speak("Iniciando entrenamiento");
+            if (!audioCtx) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            }
             
             isRunning = true;
             routineTimeline = [...protocols[currentProtocol].timeline];
             currentPhaseIndex = 0;
+            
+            document.getElementById('main-btn').innerText = "Ejecutando...";
+            document.getElementById('main-btn').disabled = true;
+            
+            startPhase();
+        }
+
+        function startPhase() {
+            if (currentPhaseIndex >= routineTimeline.length) {
+                playSound(1000, 0.5); // Sonido final largo
+                saveToHistory(currentProtocol.toUpperCase());
+                stopRoutine();
+                return;
+            }
+
+            const phase = routineTimeline[currentPhaseIndex];
+            timeRemaining = phase.duration;
             
