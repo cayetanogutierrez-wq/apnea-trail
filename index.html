@@ -55,7 +55,7 @@
     </style>
 </head>
 <body>
-    <div class="container">
+    <div class="container" onclick="unlockAudioOnce()">
         <div class="header">
             <h2>🏃‍♂️ Entrenador de Apnea</h2>
             <span style="font-size: 0.8em; color: var(--text-muted)">Audio Guía por Voz Activa</span>
@@ -73,7 +73,7 @@
             <div class="display-box">
                 <div id="status" class="status-display">Listo</div>
                 <div id="timer" class="timer-display">00:00</div>
-                <div id="sub-status" class="sub-status">Presiona iniciar para oír las instrucciones</div>
+                <div id="sub-status" class="sub-status">Toca cualquier parte de la pantalla para activar el audio</div>
             </div>
 
             <div class="controls">
@@ -98,6 +98,7 @@
         let currentProtocol = 'estatico';
         let mainInterval = null;
         let isRunning = false;
+        let audioUnlocked = false;
         
         let timeRemaining = 0;
         let currentPhaseIndex = 0;
@@ -139,6 +140,19 @@
             changeProtocol('estatico');
         });
 
+        // Mecanismo forzado para móviles: desbloquea el sintetizador de voz al primer toque
+        function unlockAudioOnce() {
+            if (audioUnlocked) return;
+            if ('speechSynthesis' in window) {
+                window.speechSynthesis.cancel();
+                // Emitir una locución vacía e invisible para engañar al sistema de seguridad del móvil
+                const u = new SpeechSynthesisUtterance("");
+                window.speechSynthesis.speak(u);
+                audioUnlocked = true;
+                document.getElementById('sub-status').innerText = "Presiona iniciar para oír las instrucciones";
+            }
+        }
+
         function speak(text) {
             if ('speechSynthesis' in window) {
                 window.speechSynthesis.cancel();
@@ -161,6 +175,8 @@
         }
 
         function toggleRoutine() {
+            // Asegurar desbloqueo si el usuario fue directo al botón
+            unlockAudioOnce();
             if (isRunning) return;
             
             speak("Iniciando entrenamiento");
@@ -169,25 +185,3 @@
             routineTimeline = [...protocols[currentProtocol].timeline];
             currentPhaseIndex = 0;
             
-            document.getElementById('main-btn').innerText = "Ejecutando...";
-            document.getElementById('main-btn').disabled = true;
-            
-            startPhase();
-        }
-
-        function startPhase() {
-            if (currentPhaseIndex >= routineTimeline.length) {
-                speak("Felicidades. Entrenamiento de tolerancia completado.");
-                saveToHistory(currentProtocol.toUpperCase());
-                stopRoutine();
-                return;
-            }
-
-            const phase = routineTimeline[currentPhaseIndex];
-            timeRemaining = phase.duration;
-            
-            const statusEl = document.getElementById('status');
-            statusEl.innerText = phase.name;
-            statusEl.style.color = phase.color;
-            
-            speak(phase.voice);
