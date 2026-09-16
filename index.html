@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Apnea Trail Pro</title>
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#0f172a">
+    
+    <link rel="manifest" href="manifest.json">
+    <link rel="icon" type="image/png" href="https://flaticon.com">
+    <link rel="apple-touch-icon" href="https://flaticon.com">
+
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --card-bg: #1e293b;
+            --accent: #38bdf8;
+            --text: #f8fafc;
+            --text-muted: #94a3b8;
+            --success: #22c55e;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text);
+            margin: 0;
+            padding: 16px;
+            display: flex;
+            justify-content: center;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .container { width: 100%; max-width: 500px; display: flex; flex-direction: column; gap: 16px; }
+        .header { text-align: center; padding: 12px; background: var(--card-bg); border-radius: 12px; border: 1px solid #334155; }
+        .card { background: var(--card-bg); border-radius: 12px; padding: 16px; border: 1px solid #334155; }
+        .tabs { display: flex; gap: 8px; margin-bottom: 12px; }
+        .tab-btn { flex: 1; padding: 12px 10px; background: #334155; border: none; color: var(--text); border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 0.9rem; }
+        .tab-btn.active { background: var(--accent); color: #000; }
+        .protocol-info { font-size: 0.85em; color: var(--text-muted); margin-bottom: 12px; line-height: 1.4; min-height: 45px; }
+        .display-box { display: flex; flex-direction: column; align-items: center; justify-content: center; margin: 20px 0; min-height: 140px; }
+        .timer-display { font-size: 4rem; font-weight: bold; color: var(--accent); font-variant-numeric: tabular-nums; line-height: 1; }
+        .status-display { text-align: center; font-size: 1.6rem; font-weight: bold; color: var(--warning); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 1px; }
+        .sub-status { font-size: 0.95rem; color: var(--text-muted); font-weight: 500; }
+        .controls { display: flex; gap: 8px; }
+        button.action-btn { flex: 1; padding: 16px; border: none; border-radius: 8px; font-size: 1.1rem; font-weight: bold; cursor: pointer; background: var(--accent); color: #000; }
+        button.secondary { background: #475569; color: var(--text); }
+        .history-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+        .clear-btn { background: transparent; border: none; color: #f87171; cursor: pointer; font-size: 0.85rem; }
+        .history-list { list-style: none; padding: 0; margin: 0; max-height: 150px; overflow-y: auto; }
+        .history-item { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #334155; font-size: 0.9em; }
+        .rule-box { background: #0284c722; border-left: 4px solid var(--accent); padding: 10px; font-size: 0.85em; border-radius: 0 8px 8px 0; margin-top: 12px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h2>🏃‍♂️ Entrenador de Apnea</h2>
+            <span style="font-size: 0.8em; color: var(--text-muted)">Audio Guía por Voz Activa</span>
+        </div>
+
+        <div class="card">
+            <div class="tabs">
+                <button id="btn-estatico" class="tab-btn active" onclick="changeProtocol('estatico')">Estático</button>
+                <button id="btn-caminata" class="tab-btn" onclick="changeProtocol('caminata')">Caminata</button>
+                <button id="btn-trote" class="tab-btn" onclick="changeProtocol('trote')">Trote</button>
+            </div>
+            
+            <div id="protocol-desc" class="protocol-info"></div>
+
+            <div class="display-box">
+                <div id="status" class="status-display">Listo</div>
+                <div id="timer" class="timer-display">00:00</div>
+                <div id="sub-status" class="sub-status">Presiona iniciar para oír las instrucciones</div>
+            </div>
+
+            <div class="controls">
+                <button id="main-btn" class="action-btn" onclick="toggleRoutine()">Iniciar Rutina</button>
+                <button id="reset-btn" class="action-btn secondary" onclick="stopRoutine()">Detener</button>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="history-header">
+                <h3>Sesiones Completadas</h3>
+                <button class="clear-btn" onclick="clearHistory()">Borrar</button>
+            </div>
+            <ul id="history" class="history-list"></ul>
+            <div class="rule-box">
+                <strong>🔊 Consejo Clave:</strong> Asegúrate de quitar el modo silencio/vibración de tu móvil para escuchar la voz del asistente correctamente.
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentProtocol = 'estatico';
+        let mainInterval = null;
+        let isRunning = false;
+        
+        let timeRemaining = 0;
+        let currentPhaseIndex = 0;
+        let routineTimeline = [];
+
+        const protocols = {
+            estatico: {
+                desc: "Tabla CO2 Estática: Bloques controlados para acostumbrar al sistema nervioso al exceso de dióxido de carbono.",
+                timeline: [
+                    { name: "Inhala profundamente", duration: 5, voice: "Inhala profundamente", color: "var(--accent)" },
+                    { name: "Exhala relajado", duration: 5, voice: "Exhala y vacía parcialmente", color: "var(--warning)" },
+                    { name: "Apnea", duration: 30, voice: "Inicia apnea. Mantén la calma.", color: "var(--success)" },
+                    { name: "Inhala aire", duration: 4, voice: "Apnea terminada. Inhala.", color: "var(--accent)" },
+                    { name: "Recuperación", duration: 15, voice: "Respira normal.", color: "var(--text-muted)" }
+                ]
+            },
+            caminata: {
+                desc: "Simulador de Marcha en Pendiente: Apneas dinámicas calculadas para pasos en subidas exigentes de montaña.",
+                timeline: [
+                    { name: "Inhala en marcha", duration: 6, voice: "Inhala aire", color: "var(--accent)" },
+                    { name: "Exhala en marcha", duration: 4, voice: "Exhala todo el aire", color: "var(--warning)" },
+                    { name: "Apnea en movimiento", duration: 20, voice: "Inicia apnea. Empieza a caminar.", color: "var(--danger)" },
+                    { name: "Recuperación", duration: 20, voice: "Apnea terminada. Recupera el aliento.", color: "var(--text-muted)" }
+                ]
+            },
+            trote: {
+                desc: "Trote Hipóxico: Bloques cortos y continuos simulando la alta presión pulmonar de ritmos de carrera.",
+                timeline: [
+                    { name: "Inhala trotando", duration: 4, voice: "Inhala", color: "var(--accent)" },
+                    { name: "Exhala trotando", duration: 4, voice: "Exhala el aire", color: "var(--warning)" },
+                    { name: "Apnea en carrera", duration: 15, voice: "Apnea en trote. Mantén el ritmo.", color: "var(--danger)" },
+                    { name: "Recuperación activa", duration: 25, voice: "Respira y recupera en carrera.", color: "var(--text-muted)" }
+                ]
+            }
+        };
+
+        document.addEventListener('DOMContentLoaded', () => {
+            loadHistory();
+            changeProtocol('estatico');
+        });
+
+        function speak(text) {
+            if ('speechSynthesis' in window) {
+                window.speechSynthesis.cancel();
+                const utterance = new SpeechSynthesisUtterance(text);
+                utterance.lang = 'es-ES';
+                utterance.rate = 1.05;
+                window.speechSynthesis.speak(utterance);
+            }
+        }
+
+        function changeProtocol(type) {
+            if (isRunning) return;
+            currentProtocol = type;
+            
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            document.getElementById(`btn-${type}`).classList.add('active');
+            document.getElementById('protocol-desc').innerText = protocols[type].desc;
+            
+            resetDisplay();
+        }
+
+        function toggleRoutine() {
+            if (isRunning) return;
+            
+            speak("Iniciando entrenamiento");
+            
+            isRunning = true;
+            routineTimeline = [...protocols[currentProtocol].timeline];
+            currentPhaseIndex = 0;
+            
+            document.getElementById('main-btn').innerText = "Ejecutando...";
+            document.getElementById('main-btn').disabled = true;
+            
+            startPhase();
+        }
+
+        function startPhase() {
+            if (currentPhaseIndex >= routineTimeline.length) {
+                speak("Felicidades. Entrenamiento de tolerancia completado.");
+                saveToHistory(currentProtocol.toUpperCase());
+                stopRoutine();
+                return;
+            }
+
+            const phase = routineTimeline[currentPhaseIndex];
+            timeRemaining = phase.duration;
+            
+            const statusEl = document.getElementById('status');
+            statusEl.innerText = phase.name;
+            statusEl.style.color = phase.color;
+            
+            speak(phase.voice);
+            updateTimerDisplay();
+
